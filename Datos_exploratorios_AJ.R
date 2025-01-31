@@ -125,4 +125,78 @@ ggplot(pregunta4.14, aes(y=voteCount, x=voteAvg, fill=voteCount)) + geom_bar(sta
 
 #15¿Qué estrategias de marketing, como videos promocionales o páginas
 #oficiales, generan mejores resultados?
+pregunta4.15 <- datos[ , c( "homePage", "video", "voteCount") ]
+pregunta4.15$homePage <- !is.na(pregunta4.15$homePage) & pregunta4.15$homePage != ""
+pregunta4.15 <- pregunta4.15[order(-pregunta4.15$video), ]
+pregunta4.15 <- aggregate(voteCount ~ video + homePage, data = pregunta4.15, FUN = sum)
+pregunta4.15
 
+#generan mejores resultados si hay video o pagina 
+
+
+# 16: ¿La popularidad del elenco está directamente correlacionada con el éxito
+#de taquilla?
+
+pregunta4.16 <- datos[, c("actorsPopularity", "revenue")]
+for (i in 1:nrow(pregunta4.16)) {
+  for (j in 1:ncol(pregunta4.16)) {
+    if (is.character(pregunta4.16[i, j])) {
+      split_values <- strsplit(pregunta4.16[i, j], "\\|")[[1]]
+      numeric_values <- as.numeric(split_values)
+      mean_value <- mean(numeric_values, na.rm = TRUE)
+      pregunta4.16[i, j] <- mean_value
+    }
+  }
+}
+
+pregunta4.16 <- pregunta4.16[order(pregunta4.16$revenue, decreasing = TRUE), ]
+pregunta4.16 <- pregunta4.16[apply(pregunta4.16!="NaN", 1, all), ]
+pregunta4.16 <- pregunta4.16[apply(pregunta4.16!=0, 1, all), ]
+pregunta4.16
+ggplot(pregunta4.16, aes(x = actorsPopularity, y = revenue)) +
+  geom_point() +
+  labs( x = "actorsPopularity", y = "revenue")
+
+
+#NO
+
+#EXTRAS 
+#¿Existe una correlación entre el número de compañías productoras involucradas en una película y su presupuesto total?
+company_x_budget  <- datos[, c("productionCoAmount" , "budget")]
+company_x_budget <- company_x_budget[order(company_x_budget$productionCoAmount, decreasing = TRUE), ]
+company_x_budget <- company_x_budget[apply(company_x_budget!=0, 1, all), ]
+company_x_budget <- aggregate(company_x_budget$budget, list(company_x_budget$productionCoAmount), FUN=mean)
+colnames(company_x_budget) <- c("productionCoAmount", "budget")
+company_x_budget
+ggplot(company_x_budget, aes(y=productionCoAmount, x=budget)) +   geom_point() +
+  geom_smooth(method = "lm", col = "red") +
+ labs(title = "¿La cantidad de productores afectan con el presupuesto?", x = "Presupuesto", y = "Cantidad de Productores") 
+
+#Existe que si hay mas productores menos presupuesto van a proporcionar en las peliculas
+
+
+#El lenguaje afecta con el exito comercial?
+
+
+#Que pais es el mas utilizado para producir una pelicula?
+paises <- datos[, c("productionCountry")]
+
+all_pais <- data.frame(pais = character(0), total = numeric(0))
+
+for (i in datos$productionCountry) {
+  pas <- strsplit(x = i, split = "|", fixed = TRUE)[[1]]
+  for (k in 1:length(pas)) {
+    all_pais <- rbind(all_pais, data.frame(pais = pas[k], total = 1))
+  }
+}
+
+
+all_pais <- aggregate(all_pais, data, FUN, ...)
+all_pais <- aggregate(all_pais$total, list(all_pais$pais), FUN=sum)
+colnames(all_pais) <- c("Pais", "Total")
+
+
+ggplot(all_pais, aes(x=Pais, y=Total, fill=Pais)) + geom_bar(stat="identity" ) +
+ labs(title = "¿La cantidad de actores influye en los ingresos de las películas?", x = "Cantidad de Actores", y = "Ganancias") +
+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +   theme(legend.position = "none") 
+# paises

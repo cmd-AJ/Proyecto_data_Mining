@@ -176,9 +176,23 @@ ggplot(company_x_budget, aes(y=productionCoAmount, x=budget)) +   geom_point() +
 
 
 #El lenguaje afecta con el exito comercial?
+lenguaje <- datos[, c("originalLanguage", "revenue")]
+lenguaje
+lenguaje <- aggregate(lenguaje$revenue, list(lenguaje$originalLanguage), FUN=sum)
+colnames(lenguaje) <- c("Lenguaje", "Total_Ganancia_Por_Lenguaje")
+lenguaje <- lenguaje[order(lenguaje$Ganancia, decreasing = TRUE), ]
+lenguaje <- lenguaje[apply(lenguaje!=0, 1, all), ]
+ggplot(lenguaje, aes(x=Lenguaje, y=Total_Ganancia_Por_Lenguaje, fill=Lenguaje)) + 
+  geom_bar(stat="identity") +
+  labs(title = "El lenguaje afecta con el éxito comercial", 
+       x = "Lenguaje", 
+       y = "Total Ganancia Por Lenguaje") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  theme(legend.position = "none") +
+  scale_y_log10()
 
 
-#Que pais es el mas utilizado para producir una pelicula?
+#Que pais es el mas utilizado para producir una pelicula?#Que pais esLenguaje el mas utilizado para producir una pelicula?
 paises <- datos[, c("productionCountry")]
 
 all_pais <- data.frame(pais = character(0), total = numeric(0))

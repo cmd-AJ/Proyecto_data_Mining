@@ -120,7 +120,7 @@ pregunta4.14 <- aggregate(pregunta4.14$voteCount, list(pregunta4.14$voteAvg), FU
 colnames(pregunta4.14) <- c("voteAvg", "voteCount")
 
 ggplot(pregunta4.14, aes(y=voteCount, x=voteAvg, fill=voteCount)) + geom_bar(stat = "identity") +
-  labs(x = "Presupuesto", y = "Ganancias")
+  labs(x = "voteAvg", y = "voteCount")
 
 
 #15¿Qué estrategias de marketing, como videos promocionales o páginas
@@ -175,7 +175,7 @@ ggplot(company_x_budget, aes(y=productionCoAmount, x=budget)) +   geom_point() +
 #Existe que si hay mas productores menos presupuesto van a proporcionar en las peliculas
 
 
-#El lenguaje afecta con el exito comercial?
+#El lenguaje afecta con el exito comercial ya que genera una mayor cantidad?
 lenguaje <- datos[, c("originalLanguage", "revenue")]
 lenguaje
 lenguaje <- aggregate(lenguaje$revenue, list(lenguaje$originalLanguage), FUN=sum)
@@ -193,24 +193,19 @@ ggplot(lenguaje, aes(x=Lenguaje, y=Total_Ganancia_Por_Lenguaje, fill=Lenguaje)) 
 
 
 #Que pais es el mas utilizado para producir una pelicula?#Que pais esLenguaje el mas utilizado para producir una pelicula?
-paises <- datos[, c("productionCountry")]
-
-all_pais <- data.frame(pais = character(0), total = numeric(0))
-
-for (i in datos$productionCountry) {
-  pas <- strsplit(x = i, split = "|", fixed = TRUE)[[1]]
-  for (k in 1:length(pas)) {
-    all_pais <- rbind(all_pais, data.frame(pais = pas[k], total = 1))
-  }
-}
-
-
-all_pais <- aggregate(all_pais, data, FUN, ...)
-all_pais <- aggregate(all_pais$total, list(all_pais$pais), FUN=sum)
+paises <- datos$productionCountry
+paises_list <- strsplit(paises, split = "\\|", fixed = FALSE)
+todos_paises <- unlist(paises_list)
+todos_paises <- todos_paises[!is.na(todos_paises) & todos_paises != ""]
+all_pais <- as.data.frame(table(todos_paises), stringsAsFactors = FALSE)
 colnames(all_pais) <- c("Pais", "Total")
-
-
-ggplot(all_pais, aes(x=Pais, y=Total, fill=Pais)) + geom_bar(stat="identity" ) +
- labs(title = "¿La cantidad de actores influye en los ingresos de las películas?", x = "Cantidad de Actores", y = "Ganancias") +
-theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +   theme(legend.position = "none") 
+all_pais <- all_pais[order(-all_pais$Total), ]
+all_pais <- all_pais[apply(all_pais!=0, 1, all), ]
+ggplot(all_pais, aes(x = reorder(Pais, -Total), y = Total, fill = Pais)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Cantidad de Producciones por País",
+       x = "País",
+       y = "Total de Producciones") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  theme(legend.position = "none") +   scale_y_log10()
 # paises

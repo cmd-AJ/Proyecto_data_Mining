@@ -16,6 +16,12 @@ library(arules)
 library(dplyr)
 library(arulesViz)
 
+if(! "arules" %in% installed.packages()) install.packages("arules", depend = TRUE)
+if(! "arulesViz" %in% installed.packages()) install.packages("arulesViz", depend = TRUE)
+library(arules)
+library(dplyr)
+library(arulesViz)
+
 ```
 
 # Leer los datos del dataset movies
@@ -35,25 +41,15 @@ cols <- c("id","genres","homePage","productionCompany","productionCompanyCountry
 
 ```
 
-# 
-
-```{r }
+```{r warning=FALSE, error=FALSE}
 #Convitiendo en factor las categóricas y Discretizando las variables numéricas con las librerias desplegadas anteriormente
 datos <- datos %>%
   mutate(across(all_of(cols), as.factor)) %>%
   mutate(across(!all_of(cols), discretize))
 
-```
-
-```{r }
-
 #Convirtiendolas en transacciones
 trans <- as(datos,"transactions")
 
-summary(trans)
-
-
-itemLabels(trans)
 as(trans[1:2, 1:10], "matrix")
 
 # Se observa que el mayor porcentaje es production countries amount 
@@ -61,11 +57,11 @@ itemFrequencyPlot(trans, topN=40,  cex.names=.5)
 
 ```
 
-## Quitaremos productioncountries amount y video porque los datos son muy frecuentes, de hecho, productioncountries llega casi al 100% mientras que video es 94% lo cual debemos de excluir en los analisis que se realizaran en la sección siguiente. Por ahora observaremos como se puede comportar si agregamos estas variables al algoritmo apriori.
+Quitaremos productioncountries amount y video porque los datos son muy frecuentes, de hecho, productioncountries llega casi al 100% mientras que video es 94% lo cual debemos de excluir en los analisis que se realizaran en la sección siguiente. Por ahora observaremos como se puede comportar si agregamos estas variables al algoritmo apriori.
 
 # Algorimto apriori lo cual utilizamos un support 0.25 para observar la cantidad mínima de reglas en este analisis.
 
-```{r }
+```{r error=FALSE, warning=FALSE}
 
 #Support 0.25 y confianza 90%
 reglas<-apriori(trans, parameter = list(support = 0.25,
@@ -83,9 +79,9 @@ plot(head(sort(reglas, by = "lift"), n=50), method = "graph", control=list(cex=.
 
 ```
 
-## Se puede observar que con un support bajo pero una confianza de 90% obtenemos una mayor cantidad de reglas, Además observamos que hay 3 tipos de nodos donde el menor datos frecuentes son de 0.3. En relaciones se analizaran cuando el support incremente y obtenga un mayor porcentaje de confiabilidad.
+Se puede observar que con un support bajo pero una confianza de 90% obtenemos una mayor cantidad de reglas, Además observamos que hay 3 tipos de nodos donde el menor datos frecuentes son de 0.3. En relaciones se analizaran cuando el support incremente y obtenga un mayor porcentaje de confiabilidad.
 
-```{r }
+```{r warning=FALSE, error=FALSE}
 
 #Support mas alto que 0.2  y confianza 92%
 reglas<-apriori(trans, parameter = list(support = 0.35,
@@ -104,9 +100,9 @@ plot(head(sort(reglas, by = "lift"), n=50), method = "graph", control=list(cex=.
 
 ```
 
-## Se puede observar que hay una menor cantidad de nodos pero observamos que hay nodos mayores a 0.7. Se puede observa que los tres nodos, revenue, budget y production countries son los mas cercanos del uno al otro lo cual podemos concluir que si tiene una relación entre si.
+Se puede observar que hay una menor cantidad de nodos pero observamos que hay nodos mayores a 0.7. Se puede observa que los tres nodos, revenue, budget y production countries son los mas cercanos del uno al otro lo cual podemos concluir que si tiene una relación entre si.
 
-```{r }
+```{r warning=FALSE, error=FALSE}
 
 #Support 0.25  y confianza 95%
 reglas<-apriori(trans, parameter = list(support = 0.60,
@@ -125,11 +121,11 @@ plot(head(sort(reglas, by = "lift"), n=50), method = "graph", control=list(cex=.
 
 ```
 
-## Conforme observamos que el support crece, mayor confiabilidad tenemos en nuestras reglas y agregando mayor confiabilidad; observamos que si estan parcialmente relacionados debido a que estan lejos de uno al otro como se observa en esta gráfica. Además tambien observamos claramente una relación extra la cual es original language la cual si tiene relacion con production countries pero no viceversa.
+Conforme observamos que el support crece, mayor confiabilidad tenemos en nuestras reglas y agregando mayor confiabilidad; observamos que si estan parcialmente relacionados debido a que estan lejos de uno al otro como se observa en esta gráfica.
 
-# Sección sin las variables productioncountriesAmount y Video
+Sección sin las variables productioncountriesAmount y Video
 
-```{r }
+```{r warning=FALSE, error=FALSE }
 
 #Quitaremos productioncountries amount y video porque los datos son muy frecuentes ya que superan mas de 80% en base a la grafica propuesta anteriormente  
 #con la finalidad de obtener mas insights
@@ -150,9 +146,9 @@ as(trans[1:2, 1:10], "matrix")
 itemFrequencyPlot(trans, topN=40,  cex.names=.5)
 ```
 
-# Ahora observamos que originalLanguage es el dato mas frecuente con una probabilidad de 77.72%.
+Ahora observamos que originalLanguage es el dato mas frecuente con una probabilidad de 77.72%.
 
-```{r }
+```{r warning=FALSE, error=FALSE}
 
 reglas<-apriori(trans, parameter = list(support = 0.25,
                                         target = "frequent", 
@@ -171,9 +167,9 @@ plot(head(sort(reglas, by = "lift"), n=50), method = "graph", control=list(cex=.
 
 ```
 
-## Observamos que hay pocas reglas con un support igual a los incisos anteriores. En la siguiente sección se incrementara el support y su nivel de confianza para ver con claridad las relaciones de cada uno.
+Observamos que hay pocas reglas con un support igual a los incisos anteriores. En la siguiente sección se incrementara el support y su nivel de confianza para ver con claridad las relaciones de cada uno.
 
-```{r }
+```{r warning=FALSE, error=FALSE}
 
 reglas<-apriori(trans, parameter = list(support = 0.35,
                                         target = "frequent", 
@@ -190,4 +186,118 @@ inspect(head(sort(reglas, by = "lift"), n=10))
 plot(head(sort(reglas, by = "lift"), n=50), method = "graph", control=list(cex=.8))  
 ```
 
-## Nuevamente observamos que budget, revenue y originalLanguage se relacionan entre sí pero con mayor support y confiabilidad podemos observar que menos reglas pero son confiables.
+Nuevamente observamos que budget, revenue y originalLanguage se relacionan entre sí pero con mayor support y confiabilidad podemos observar que menos reglas pero son confiables.
+
+3\. Análisis de Componentes Principales
+
+1.Estudie si es posible hacer transformaciones en las variables categóricas para incluirlas en el PCA, ¿valdrá la pena? No valdría la pena en la mayoria de las categorias aunque, se podria analizar algunos datos como el género pero otras categorias, como homepage, directores, productionc company, actoscharacter etc.. debido a que tienen diferentes valores unicos las cuales podria ser dificil de interpretar.
+
+2.Estudie si es conveniente hacer un Análisis de Componentes Principales. Recuerde que puede usar el índice KMO y el test de esfericidad de Bartlett.
+
+```{r warning=FALSE, error=FALSE}
+
+datos<-read.csv("movies.csv", stringsAsFactors = F)
+
+columns_list <- c("budget", "revenue", "runtime", "popularity", "voteAvg", "voteCount", "genresAmount", "productionCoAmount" )
+datos <- datos[, columns_list]
+
+rcor<-cor(datos,use = "pairwise.complete.obs")
+det(rcor)#Si el determinante de la matriz de correlación es cercano a 0 significa que hay multicolinealidad
+
+
+KMO(as.matrix(datos)) 
+
+```
+
+Se observa que tenemos un KMO de 0.71 la cual identificado como aceptable adecuación muestral.
+
+```{r warning=FALSE, error=FALSE}
+
+datos<-read.csv("movies.csv", stringsAsFactors = F)
+
+columns_list <- c("budget", "revenue", "runtime", "popularity", "voteAvg", "voteCount", "genresAmount", "productionCoAmount" )
+datos <- datos[, columns_list]
+
+rcor<-cor(datos,use = "pairwise.complete.obs")
+det(rcor)#Si el determinante de la matriz de correlación es cercano a 0 significa que hay multicolinealidad
+
+cortest.bartlett(datos) 
+
+```
+Para la test de esfericidad de Bartlett se identifico 21215.57 la cual es un valor mayor pero como podemos observar el valor de p es 0 lo cual rechazamos la hipotesis.
+
+
+
+3.Haga un análisis de componentes principales con las variables numéricas, discuta los resultados e interprete los componentes.
+
+```{r warning=FALSE, error=FALSE}
+cor(datos[,-1],use = "pairwise.complete.obs")
+compPrincPCA<-PCA(datos,ncp=ncol(datos), scale.unit = T)
+
+head(summary(compPrincPCA))
+
+#Se obtiene el scree plot de las componentes principales.
+# Como se ve hacen falta 4 de las 7 componentes para explicar m?s del 80% de la variabilidad
+fviz_eig(compPrinc, addlabels = TRUE, ylim = c(0, 80))
+
+
+```
+
+Como se puede observar en el scree plot, existe una varianza que suma 100%. El primer porcentaje es de 34% donde es la mayor varianza mientras que en la mitad se ve que andan en un rango cercano del uno al otro no aportan tanta información.
+
+```{r warning=FALSE, error=FALSE}
+cor(datos[,-1],use = "pairwise.complete.obs")
+compPrincPCA<-PCA(datos,ncp=ncol(datos), scale.unit = T)
+
+head(summary(compPrincPCA))
+
+#Se obtiene el scree plot de las componentes principales.
+# Como se ve hacen falta 4 de las 7 componentes para explicar m?s del 80% de la variabilidad
+fviz_eig(compPrinc, addlabels = TRUE, choice = c("eigenvalue"), ylim = c(0, 3))
+
+
+```
+
+Con los valores de los eigenvalores 2.7, 1.1, 1, 1, 0.9, 0.7, 0.3, 0.2, el punto de codo en el scree plot se encuentra después de los primeros tres componentes, ya que los primeros dos componentes con eigenvalores de 2.7 y 1.1 explican una gran parte de la varianza en los datos, mientras que el tercer componente con eigenvalor de 1 también tiene una contribución significativa. Después de estos, los eigenvalores disminuyen drásticamente 0.9, 0.7, etc., lo que indica que las siguientes componentes aportan muy poco en términos de varianza explicada.
+
+```{r warning=FALSE, error=FALSE}
+
+fviz_pca_biplot(compPrinc,repel = F)
+
+```
+En este caso, las dos primeras componentes principales explican un 34.3% y 13.6% de la variabilidad de los datos. Los puntos representan las películas, y los vectores indican cómo contribuyen las variables a esas componentes. Los vectores "genresAmount", "production CoAmount", "vote_avg" y "runtime" son los más relevantes, mostrando que las películas con muchos géneros suelen tener muchas compañías de producción, y las de alta calificación tienden a ser más largas.
+
+```{r warning=FALSE, error=FALSE}
+fviz_pca_var(compPrinc, col.var = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE # Avoid text overlapping
+)
+
+```
+Se observa que revenue y budget si estan cerca los cual si podemos relacionarlos ademas de eso se observa que son perpendiculares con voteAvg y runtime lo cual se observa que no hay relacion alguna. 
+
+```{r warning=FALSE, error=FALSE}
+fviz_contrib(compPrinc, choice = "var", axes = 1, top = 10) #Dimensión 1
+
+```
+
+
+```{r warning=FALSE, error=FALSE}
+fviz_contrib(compPrinc, choice = "var", axes = 2, top = 10) #Dimensión 2
+```
+
+
+
+```{r warning=FALSE, error=FALSE}
+fviz_contrib(compPrinc, choice = "var", axes = 3, top = 10) #Dimensión 3
+```
+
+Como se puede observar en la primera y segunda grafica, se observa que las primeras tres variables si contribuyen y pasan de la linea. A comparación de la gráfica 3 solo dos variables ("productionCoAmoun" "voteAvg") sobrepasan del porcentaje de contribuciones.
+
+
+```{r warning=FALSE, error=FALSE}
+var<-get_pca_var(compPrinc)
+corrplot(var$cos2, is.corr = F) #Dimensión 3
+```
+De las tres variables que se observan en la primera columna, se puede tomar VoteCount, revenue y budget como variables para analizar ya que si tienen una correlacion grande. De las otras columnas no tienen una correlación tan clara para ser analizadas. 
+

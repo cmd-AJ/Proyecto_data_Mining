@@ -1,0 +1,193 @@
+---
+title: "Entrega 2 Apriori"
+author: "Andre Jo"
+date: "2025-02-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+##Declarar las librerias 
+if(! "arules" %in% installed.packages()) install.packages("arules", depend = TRUE)
+if(! "arulesViz" %in% installed.packages()) install.packages("arulesViz", depend = TRUE)
+library(arules)
+library(dplyr)
+library(arulesViz)
+
+```
+
+# Leer los datos del dataset movies
+
+```{r }
+datos <- read.csv("movies.csv")
+
+```
+
+# Identificar variables que son no númericos
+
+```{r }
+#TOMAR NOTA CAST WOMEN Y MAN son strings porque contiene datos como titulos de pelicula por eso se pone en cols
+cols <- c("id","genres","homePage","productionCompany","productionCompanyCountry","productionCountry",
+          "video","director","actors","actorsPopularity","actorsCharacter", "originalTitle", "title", "originalLanguage",
+          "releaseDate", "castWomenAmount", "castMenAmount")
+
+```
+
+# 
+
+```{r }
+#Convitiendo en factor las categóricas y Discretizando las variables numéricas con las librerias desplegadas anteriormente
+datos <- datos %>%
+  mutate(across(all_of(cols), as.factor)) %>%
+  mutate(across(!all_of(cols), discretize))
+
+```
+
+```{r }
+
+#Convirtiendolas en transacciones
+trans <- as(datos,"transactions")
+
+summary(trans)
+
+
+itemLabels(trans)
+as(trans[1:2, 1:10], "matrix")
+
+# Se observa que el mayor porcentaje es production countries amount 
+itemFrequencyPlot(trans, topN=40,  cex.names=.5)
+
+```
+
+## Quitaremos productioncountries amount y video porque los datos son muy frecuentes, de hecho, productioncountries llega casi al 100% mientras que video es 94% lo cual debemos de excluir en los analisis que se realizaran en la sección siguiente. Por ahora observaremos como se puede comportar si agregamos estas variables al algoritmo apriori.
+
+# Algorimto apriori lo cual utilizamos un support 0.25 para observar la cantidad mínima de reglas en este analisis.
+
+```{r }
+
+#Support 0.25 y confianza 90%
+reglas<-apriori(trans, parameter = list(support = 0.25,
+                                        target = "frequent", 
+                                        confidence = 0.90,
+                                        minlen=3, maxlen=4))
+inspect(reglas)
+
+
+quality(reglas)$lift <- interestMeasure(reglas, measure="lift", trans = trans)
+
+inspect(head(sort(reglas, by = "lift"), n=10))
+
+plot(head(sort(reglas, by = "lift"), n=50), method = "graph", control=list(cex=.8))  
+
+```
+
+## Se puede observar que con un support bajo pero una confianza de 90% obtenemos una mayor cantidad de reglas, Además observamos que hay 3 tipos de nodos donde el menor datos frecuentes son de 0.3. En relaciones se analizaran cuando el support incremente y obtenga un mayor porcentaje de confiabilidad.
+
+```{r }
+
+#Support mas alto que 0.2  y confianza 92%
+reglas<-apriori(trans, parameter = list(support = 0.35,
+                                        target = "frequent", 
+                                        confidence = 0.92,
+                                        minlen=3, maxlen=4))
+inspect(reglas)
+
+
+quality(reglas)$lift <- interestMeasure(reglas, measure="lift", trans = trans)
+
+inspect(head(sort(reglas, by = "lift"), n=10))
+
+plot(head(sort(reglas, by = "lift"), n=50), method = "graph", control=list(cex=.8))  
+
+
+```
+
+## Se puede observar que hay una menor cantidad de nodos pero observamos que hay nodos mayores a 0.7. Se puede observa que los tres nodos, revenue, budget y production countries son los mas cercanos del uno al otro lo cual podemos concluir que si tiene una relación entre si.
+
+```{r }
+
+#Support 0.25  y confianza 95%
+reglas<-apriori(trans, parameter = list(support = 0.60,
+                                        target = "frequent", 
+                                        confidence = 0.95,
+                                        minlen=3, maxlen=4))
+inspect(reglas)
+
+
+quality(reglas)$lift <- interestMeasure(reglas, measure="lift", trans = trans)
+
+inspect(head(sort(reglas, by = "lift"), n=10))
+
+plot(head(sort(reglas, by = "lift"), n=50), method = "graph", control=list(cex=.8))  
+
+
+```
+
+## Conforme observamos que el support crece, mayor confiabilidad tenemos en nuestras reglas y agregando mayor confiabilidad; observamos que si estan parcialmente relacionados debido a que estan lejos de uno al otro como se observa en esta gráfica. Además tambien observamos claramente una relación extra la cual es original language la cual si tiene relacion con production countries pero no viceversa.
+
+# Sección sin las variables productioncountriesAmount y Video
+
+```{r }
+
+#Quitaremos productioncountries amount y video porque los datos son muy frecuentes ya que superan mas de 80% en base a la grafica propuesta anteriormente  
+#con la finalidad de obtener mas insights
+
+
+datos <- datos[,-10]
+datos <- datos[,-23]
+
+#Convirtiendolas en transacciones
+trans <- as(datos,"transactions")
+summary(trans)
+
+
+itemLabels(trans)
+as(trans[1:2, 1:10], "matrix")
+
+# Se observa que el mayor porcentaje es production countries amount 
+itemFrequencyPlot(trans, topN=40,  cex.names=.5)
+```
+
+# Ahora observamos que originalLanguage es el dato mas frecuente con una probabilidad de 77.72%.
+
+```{r }
+
+reglas<-apriori(trans, parameter = list(support = 0.25,
+                                        target = "frequent", 
+                                        confidence = 0.80,
+                                        minlen=3, maxlen=4))
+
+inspect(reglas)
+
+
+quality(reglas)$lift <- interestMeasure(reglas, measure="lift", trans = trans)
+
+inspect(head(sort(reglas, by = "lift"), n=10))
+
+plot(head(sort(reglas, by = "lift"), n=50), method = "graph", control=list(cex=.8))  
+
+
+```
+
+## Observamos que hay pocas reglas con un support igual a los incisos anteriores. En la siguiente sección se incrementara el support y su nivel de confianza para ver con claridad las relaciones de cada uno.
+
+```{r }
+
+reglas<-apriori(trans, parameter = list(support = 0.35,
+                                        target = "frequent", 
+                                        confidence = 0.92,
+                                        minlen=3, maxlen=4))
+
+inspect(reglas)
+
+
+quality(reglas)$lift <- interestMeasure(reglas, measure="lift", trans = trans)
+
+inspect(head(sort(reglas, by = "lift"), n=10))
+
+plot(head(sort(reglas, by = "lift"), n=50), method = "graph", control=list(cex=.8))  
+```
+
+## Nuevamente observamos que budget, revenue y originalLanguage se relacionan entre sí pero con mayor support y confiabilidad podemos observar que menos reglas pero son confiables.

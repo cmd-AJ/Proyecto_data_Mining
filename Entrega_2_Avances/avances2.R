@@ -37,15 +37,30 @@ as(trans[1:2, 1:10], "matrix")
 # Se observa que el mayor porcentaje es production countries amount 
 itemFrequencyPlot(trans, topN=40,  cex.names=.5)
 
+#Support 0.25 y confianza 90%
+reglas<-apriori(trans, parameter = list(support = 0.25,
+                                        target = "frequent", 
+                                        confidence = 0.90,
+                                        minlen=3, maxlen=4))
 
+#Support mas alto que 0.2  y confianza 90%
 reglas<-apriori(trans, parameter = list(support = 0.35,
                                         target = "frequent", 
+                                        confidence = 0.90,
+                                        minlen=3, maxlen=4))
+
+#Support menor que 0.2  y confianza 95%
+reglas<-apriori(trans, parameter = list(support = 0.15,
+                                        target = "frequent", 
+                                        confidence = 0.95,
                                         minlen=3, maxlen=4))
 
 inspect(reglas)
 
 
 quality(reglas)$lift <- interestMeasure(reglas, measure="lift", trans = trans)
+
 inspect(head(sort(reglas, by = "lift"), n=10))
 
 plot(head(sort(reglas, by = "lift"), n=50), method = "graph", control=list(cex=.8))  
+  

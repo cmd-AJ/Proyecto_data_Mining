@@ -301,3 +301,36 @@ corrplot(var$cos2, is.corr = F) #Dimensión 3
 ```
 De las tres variables que se observan en la primera columna, se puede tomar VoteCount, revenue y budget como variables para analizar ya que si tienen una correlacion grande. De las otras columnas no tienen una correlación tan clara para ser analizadas. 
 
+
+## Conclusiones 
+
+Las películas con mayor presupuesto tienden a recibir mejores calificaciones (voteAvg) y pueden generar mayores ingresos, como se observa en la matriz de correlación. 
+
+ Además, las películas con mayor duración y aquellas que incluyen rodajes en múltiples países pueden mejorar su calificación. Esto se puede inferir a partir de las gráficas de porcentaje de contribuciones. 
+
+ También es importante analizar variables como la cantidad de países en los que se realiza el rodaje, ya que esto podría influir en el promedio de votos que recibe una película. Esto se evidencia en la matriz de correlación, en la tercera dimensión de la gráfica de porcentajes de contribuciones y en la baja correlación observada en la matriz de correlación 
+
+ 
+
+Determina las reglas de asociación más interesantes 
+
+Se observa que, con un mayor support y una mayor confiabilidad, obtenemos más reglas que se relacionan con la variable cantidad de países en los que se rodaron las películas y si tienen video. Esto se debe a la mayor frecuencia de estos casos, lo que genera más reglas con un support elevado. 
+
+  
+
+Aunque encontramos una relación con un support de 0.71, observamos que cuantas más películas usan el idioma inglés, menos necesitan un video promocional, ya que la mayoría de las personas entienden inglés. Por esta razón, eliminamos esta variable para obtener más insights. Además, se infiere que las películas con un presupuesto mayor y cuyo idioma principal es el inglés pueden estar asociadas con mayores ingresos. 
+
+  
+
+
+## Sugerencias para CineVision Studios 
+
+A partir del análisis realizado y considerando que el criterio para medir el éxito de un estudio es cuántos ingresos puede generar una película, se recomienda que CineVision Studios produzca películas con un buen presupuesto y que el idioma principal sea el inglés, ya que esto podría contribuir a mayores ingresos. 
+
+  
+
+Otra sugerencia es tomar en cuenta la relación entre el público y las votaciones para analizar su impacto en los ingresos y el presupuesto de las películas, como se muestra a continuación:  
+
+Si hay pocos votos y bajos ingresos, significa que la película no generó interés en la audiencia. 
+
+Si hay un alto presupuesto y muchas votaciones, se puede inferir que la película atrajo a más espectadores y generó mayores ingresos. 
